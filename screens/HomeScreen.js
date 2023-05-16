@@ -9,6 +9,8 @@ import DressItem from "../components/DressItem";
 import { useDispatch, useSelector } from "react-redux";
 import { getProducts } from "../ProductReducer";
 import { useNavigation } from "@react-navigation/native";
+import { collection, getDoc, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
 
 const HomeScreen = () => {
   const cart = useSelector((state) => state.cart.cart);
@@ -83,11 +85,17 @@ const HomeScreen = () => {
   useEffect(() => {
     if (product.length > 0) return;
 
-    const fetchProducts = () => {
-      services.map((service) => dispatch(getProducts(service)));
+    const fetchProducts = async () => {
+      const colRef = collection(db, "types");
+      const docsSnap = await getDocs(colRef);
+      docsSnap.forEach((doc) => {
+        items.push(doc.data());
+      });
+      items?.map((service) => dispatch(getProducts(service)));
     };
     fetchProducts();
-  });
+  }, []);
+  console.log(product);
   const services = [
     {
       id: "0",
@@ -146,7 +154,7 @@ const HomeScreen = () => {
         {/* Location and Profile */}
         <View style={{ flexDirection: "row", alignItems: "center", padding: 10 }}>
           <MaterialIcons name="location-on" size={30} color="#2491CB" />
-          <View>
+          <View style={{ width: "80%" }}>
             <Text style={{ fontSize: 18, fontWeight: "600" }}>Rumah</Text>
             <Text>{displayCurrentAddress}</Text>
           </View>
